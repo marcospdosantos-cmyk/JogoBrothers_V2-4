@@ -4,7 +4,7 @@ import { BaseEnemy } from '../enemies/BaseEnemy.js';
 
 export class HamburgerMonstro extends BaseEnemy {
   constructor(scene, x, y) {
-    super(scene, x, y, 'boss1', 0);
+    super(scene, x, y, 'bosses', 0);
     this._hp     = 5;
     this._speed  = 50;
     this.setScale(3);
@@ -21,17 +21,17 @@ export class HamburgerMonstro extends BaseEnemy {
 
   _buildAnims(scene) {
     if (!scene.anims.exists('monstro_walk')) {
-      scene.anims.create({ key: 'monstro_walk', frames: scene.anims.generateFrameNumbers('boss1', { frames: [0, 1] }), frameRate: 5, repeat: -1 });
+      scene.anims.create({ key: 'monstro_walk', frames: scene.anims.generateFrameNumbers('bosses', { frames: [0, 1] }), frameRate: 5, repeat: -1 });
     }
     if (!scene.anims.exists('monstro_hurt')) {
-      scene.anims.create({ key: 'monstro_hurt', frames: scene.anims.generateFrameNumbers('boss1', { frames: [2] }), frameRate: 4, repeat: 0 });
+      scene.anims.create({ key: 'monstro_hurt', frames: scene.anims.generateFrameNumbers('bosses', { frames: [2] }), frameRate: 4, repeat: 0 });
     }
   }
 
   _spit() {
     if (this._dead || !this.active) return;
     const dirX = this.flipX ? 1 : -1;
-    const grease = this.scene.physics.add.image(this.x + dirX * 30, this.y, 'boss1', 3);
+    const grease = this.scene.physics.add.image(this.x + dirX * 30, this.y, 'bosses', 3);
     grease.setVelocityX(dirX * 220);
     grease.setVelocityY(-60);
     grease.setGravityY(200);

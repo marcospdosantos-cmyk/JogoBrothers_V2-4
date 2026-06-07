@@ -170,7 +170,7 @@ export class GameScene extends Phaser.Scene {
     fries.destroy();
     this._score.add(SCORE.FRIES);
     this._hud.updateScore(this._score.get());
-    this.sound.play('sfx_fries');
+    this.sound.play('sfx_collect');
   }
 
   _onIngredient(player, item) {
@@ -186,7 +186,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       this._hud.updateScore(this._score.get());
     }
-    this.sound.play('sfx_fries');
+    this.sound.play('sfx_collect');
   }
 
   _onPowerUp(player, item) {

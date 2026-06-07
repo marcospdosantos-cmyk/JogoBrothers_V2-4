@@ -3,7 +3,7 @@ import { BaseEnemy } from '../enemies/BaseEnemy.js';
 
 export class Gordao extends BaseEnemy {
   constructor(scene, x, y) {
-    super(scene, x, y, 'boss2', 0);
+    super(scene, x, y, 'bosses', 4);
     this._hp     = 8;
     this._speed  = 60;
     this._phase  = 1;
@@ -17,13 +17,13 @@ export class Gordao extends BaseEnemy {
 
   _buildAnims(scene) {
     if (!scene.anims.exists('gordao_walk')) {
-      scene.anims.create({ key: 'gordao_walk', frames: scene.anims.generateFrameNumbers('boss2', { frames: [0, 1] }), frameRate: 5, repeat: -1 });
+      scene.anims.create({ key: 'gordao_walk', frames: scene.anims.generateFrameNumbers('bosses', { frames: [4, 5] }), frameRate: 5, repeat: -1 });
     }
     if (!scene.anims.exists('gordao_charge')) {
-      scene.anims.create({ key: 'gordao_charge', frames: scene.anims.generateFrameNumbers('boss2', { frames: [2, 3] }), frameRate: 12, repeat: -1 });
+      scene.anims.create({ key: 'gordao_charge', frames: scene.anims.generateFrameNumbers('bosses', { frames: [6, 7] }), frameRate: 12, repeat: -1 });
     }
     if (!scene.anims.exists('gordao_hurt')) {
-      scene.anims.create({ key: 'gordao_hurt', frames: scene.anims.generateFrameNumbers('boss2', { frames: [4] }), frameRate: 4, repeat: 0 });
+      scene.anims.create({ key: 'gordao_hurt', frames: scene.anims.generateFrameNumbers('bosses', { frames: [8] }), frameRate: 4, repeat: 0 });
     }
   }
 
