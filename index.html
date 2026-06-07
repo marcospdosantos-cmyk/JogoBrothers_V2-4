@@ -2,15 +2,39 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Brothers Burger — O Jogo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
     canvas { display: block; }
   </style>
+  <style>
+    #rotate-prompt {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #111;
+      color: #fff;
+      font-family: monospace;
+      font-size: 20px;
+      text-align: center;
+      padding: 40px 20px;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (orientation: portrait) and (max-width: 900px) {
+      #rotate-prompt { display: flex; }
+    }
+  </style>
 </head>
 <body>
+  <div id="rotate-prompt">
+    <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+    <div>Vire o celular na horizontal<br>para jogar!</div>
+  </div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
