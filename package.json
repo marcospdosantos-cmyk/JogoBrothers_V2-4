@@ -16,11 +16,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.107.0",
-    "phaser": "^4.1.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "phaser": "^3.87.0"
   },
   "devDependencies": {
-    "vite": "^8.0.16",
-    "vitest": "^4.1.8"
+    "vite": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }
