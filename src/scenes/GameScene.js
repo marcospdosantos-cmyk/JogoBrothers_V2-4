@@ -41,6 +41,7 @@ export class GameScene extends Phaser.Scene {
 
     // Player
     this._player = new Player(this, spawnX, spawnY, this._character);
+    this._player.setName('player');
     this.physics.add.collider(this._player, this._groundLayer);
 
     // Collectibles group
