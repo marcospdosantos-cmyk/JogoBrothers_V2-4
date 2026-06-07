@@ -19,6 +19,7 @@ export class PowerUpSystem {
   }
 
   applyDamage() {
+    if (this._invincible) return false;
     if (this.state === PLAYER_STATE.THROWER) { this.state = PLAYER_STATE.GIANT; return false; }
     if (this.state === PLAYER_STATE.GIANT)   { this.state = PLAYER_STATE.SMALL; return false; }
     return true; // SMALL → died
@@ -27,6 +28,7 @@ export class PowerUpSystem {
   activateInvincibility(ms = 10000) {
     this._invincible = true;
     clearTimeout(this._invincibilityTimer);
+    this._invincibilityTimer = null;
     this._invincibilityTimer = setTimeout(() => { this._invincible = false; }, ms);
   }
 
@@ -37,5 +39,6 @@ export class PowerUpSystem {
     this.state = PLAYER_STATE.SMALL;
     this._invincible = false;
     clearTimeout(this._invincibilityTimer);
+    this._invincibilityTimer = null;
   }
 }

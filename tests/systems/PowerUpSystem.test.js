@@ -65,10 +65,12 @@ describe('PowerUpSystem', () => {
     expect(sys.canThrow()).toBe(true);
   });
 
-  it('activateInvincibility sets isInvincible() true', () => {
+  it('activateInvincibility sets isInvincible() true then expires', () => {
     vi.useFakeTimers();
     sys.activateInvincibility(10000);
     expect(sys.isInvincible()).toBe(true);
+    vi.advanceTimersByTime(10001);
+    expect(sys.isInvincible()).toBe(false);
     vi.useRealTimers();
   });
 
@@ -78,5 +80,15 @@ describe('PowerUpSystem', () => {
     sys.reset();
     expect(sys.state).toBe(PLAYER_STATE.SMALL);
     expect(sys.canThrow()).toBe(false);
+  });
+
+  it('applyDamage() is no-op while invincible', () => {
+    vi.useFakeTimers();
+    sys.applyMushroom(); // GIANT
+    sys.activateInvincibility(10000);
+    const died = sys.applyDamage();
+    expect(died).toBe(false);
+    expect(sys.state).toBe(PLAYER_STATE.GIANT); // state unchanged
+    vi.useRealTimers();
   });
 });
