@@ -1,4 +1,5 @@
 // src/main.js
+import './phaser-global.js'; // publishes global Phaser for rex plugins; keep first
 import Phaser from 'phaser';
 import { GAME_W, GAME_H } from './config/game.js';
 import { BootScene } from './scenes/BootScene.js';

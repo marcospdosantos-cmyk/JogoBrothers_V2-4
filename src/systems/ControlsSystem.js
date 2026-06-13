@@ -1,60 +1,56 @@
 // src/systems/ControlsSystem.js
+import '../phaser-global.js'; // MUST come before the rex import (sets global Phaser)
+import VirtualJoyStick from 'phaser3-rex-plugins/plugins/virtualjoystick.js';
 import { GAME_W, GAME_H } from '../config/game.js';
 
 // Virtual SNES-style controls over the game canvas.
 //
-// Held state (left/right/down/run/jumpHeld) reflects whether the input is
-// currently active. Edge state (jump/spinJump/throwPotato) is true only for the
-// single frame the button was pressed — GameScene calls clearPressed() at the
-// end of each update so a held finger never re-triggers.
+// The directional pad is the rexVirtualJoyStick plugin: production-grade,
+// multi-touch, analog, and scroll-safe (fixed:true sets scrollFactor 0 and the
+// plugin compensates for camera scroll internally). The four action buttons
+// (B/A/X/Y) stay hand-rolled so we keep the exact SNES layout, edge-triggered
+// presses, and per-pointer release tracking.
 //
-// Multi-touch is required: a player must move the joystick with one thumb while
-// pressing a button with the other. Each pointer id is tracked independently so
-// releasing one finger never cancels another finger's button.
+// Held state (left/right/down/run/jumpHeld) reflects what's currently active.
+// Edge state (jump/spinJump/throwPotato) is true only for the single frame the
+// button was pressed — GameScene calls clearPressed() at the end of each update.
+const RUN_FORCE_RATIO = 0.82; // push the stick past this fraction of its radius to run
+
 export class ControlsSystem {
   constructor(scene) {
     this.scene = scene;
 
-    this._held = { left: false, right: false, down: false, run: false, jumpHeld: false };
+    this._held = { run: false, jumpHeld: false };
     this._pressed = { jump: false, spinJump: false, throwPotato: false };
 
-    this._joystickId = null;
-    this._joystickOrigin = { x: 0, y: 0 };
-    this._joystickRadius = 64;
-
     this._btns = {};
-    this._pointerButton = {}; // pointerId -> button key (for correct multi-touch release)
-
-    // Bound handlers so we can detach them on destroy (scene.restart reuses input).
-    this._onMove = this._handleMove.bind(this);
+    this._pointerButton = {}; // pointerId -> button key (correct multi-touch release)
     this._onUp = this._handleUp.bind(this);
 
-    this._build();
-  }
-
-  _build() {
     this._buildJoystick();
     this._buildButtons();
-    this.scene.input.on('pointermove', this._onMove);
+
     this.scene.input.on('pointerup', this._onUp);
     this.scene.input.on('pointerupoutside', this._onUp);
     this.scene.input.on('gameout', this._onUp);
   }
 
   _buildJoystick() {
-    const bx = 96, by = GAME_H - 90, r = this._joystickRadius;
-    this._joystickBase = this.scene.add.circle(bx, by, r, 0xffffff, 0.12)
-      .setDepth(40).setScrollFactor(0).setStrokeStyle(3, 0xffffff, 0.35);
-    this._joystickThumb = this.scene.add.circle(bx, by, 28, 0xffffff, 0.45)
-      .setDepth(41).setScrollFactor(0);
+    const bx = 96, by = GAME_H - 90;
+    this._radius = 64;
 
-    // A generous square zone so the thumb is easy to find without looking.
-    const zone = this.scene.add.zone(bx, by, r * 2.4, r * 2.4)
-      .setInteractive().setDepth(42).setScrollFactor(0);
-    zone.on('pointerdown', (p) => {
-      if (this._joystickId !== null) return; // already tracking a finger
-      this._joystickId = p.id;
-      this._joystickOrigin = { x: p.x, y: p.y };
+    const base = this.scene.add.circle(bx, by, this._radius, 0xffffff, 0.12)
+      .setStrokeStyle(3, 0xffffff, 0.35).setDepth(40);
+    const thumb = this.scene.add.circle(bx, by, 28, 0xffffff, 0.45).setDepth(41);
+
+    this._joystick = new VirtualJoyStick(this.scene, {
+      x: bx, y: by,
+      radius: this._radius,
+      base,
+      thumb,
+      dir: '8dir',
+      forceMin: 14,   // dead zone so a resting thumb doesn't drift
+      fixed: true,    // sets scrollFactor 0 on base/thumb; plugin is scroll-safe
     });
   }
 
@@ -78,7 +74,7 @@ export class ControlsSystem {
 
       circle.on('pointerdown', (p) => {
         this._pointerButton[p.id] = def.key;
-        circle.setFillStyle(def.color, 1);          // visual press feedback
+        circle.setFillStyle(def.color, 1);   // visual press feedback
         circle.setScale(0.9);
         this._press(def.key);
       });
@@ -94,51 +90,28 @@ export class ControlsSystem {
     if (key === 'throwPotato') { this._pressed.throwPotato = true; return; }
   }
 
-  _handleMove(p) {
-    if (p.id !== this._joystickId) return;
-    const r = this._joystickRadius;
-    const dx = p.x - this._joystickOrigin.x;
-    const dy = p.y - this._joystickOrigin.y;
-    const dist = Math.min(Math.hypot(dx, dy), r);
-    const angle = Math.atan2(dy, dx);
-    this._joystickThumb.setPosition(
-      this._joystickBase.x + Math.cos(angle) * dist,
-      this._joystickBase.y + Math.sin(angle) * dist,
-    );
-    const threshold = 14;
-    this._held.left = dx < -threshold;
-    this._held.right = dx > threshold;
-    this._held.down = dy > threshold;
-  }
-
   _handleUp(p) {
-    // Joystick release
-    if (p && p.id === this._joystickId) {
-      this._joystickId = null;
-      this._joystickThumb.setPosition(this._joystickBase.x, this._joystickBase.y);
-      this._held.left = this._held.right = this._held.down = false;
-    }
-    // Button release — only the button this exact pointer pressed
     const key = p ? this._pointerButton[p.id] : null;
-    if (key) {
-      delete this._pointerButton[p.id];
-      const btn = this._btns[key];
-      if (btn) { btn.circle.setFillStyle(btn.color, 0.65); btn.circle.setScale(1); }
-      if (key === 'run') this._held.run = false;
-      if (key === 'jump' || key === 'spinJump') {
-        // jumpHeld stays true only while a jump-style button is still down
-        const stillHeld = Object.values(this._pointerButton).some(k => k === 'jump' || k === 'spinJump');
-        if (!stillHeld) this._held.jumpHeld = false;
-      }
+    if (!key) return;
+    delete this._pointerButton[p.id];
+    const btn = this._btns[key];
+    if (btn) { btn.circle.setFillStyle(btn.color, 0.65); btn.circle.setScale(1); }
+    if (key === 'run') this._held.run = false;
+    if (key === 'jump' || key === 'spinJump') {
+      const stillHeld = Object.values(this._pointerButton).some(k => k === 'jump' || k === 'spinJump');
+      if (!stillHeld) this._held.jumpHeld = false;
     }
   }
 
   getState() {
+    const j = this._joystick;
+    const forceRatio = Math.min(j.force / this._radius, 1);
     return {
-      left: this._held.left,
-      right: this._held.right,
-      down: this._held.down,
-      run: this._held.run,
+      left: j.left,
+      right: j.right,
+      down: j.down,
+      // Analog: a full push runs even without the X button.
+      run: this._held.run || forceRatio >= RUN_FORCE_RATIO,
       jumpHeld: this._held.jumpHeld,
       jump: this._pressed.jump,
       spinJump: this._pressed.spinJump,
@@ -154,12 +127,10 @@ export class ControlsSystem {
   }
 
   destroy() {
-    this.scene.input.off('pointermove', this._onMove);
     this.scene.input.off('pointerup', this._onUp);
     this.scene.input.off('pointerupoutside', this._onUp);
     this.scene.input.off('gameout', this._onUp);
-    this._joystickBase.destroy();
-    this._joystickThumb.destroy();
+    this._joystick.destroy();
     Object.values(this._btns).forEach(b => b.circle.destroy());
   }
 }
