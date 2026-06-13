@@ -33,8 +33,10 @@ describe('RankingService', () => {
     ];
     supabase.from.mockReturnValue({
       select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue({ data: rows, error: null }),
+        gte: vi.fn().mockReturnValue({
+          order: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue({ data: rows, error: null }),
+          }),
         }),
       }),
     });
@@ -42,5 +44,23 @@ describe('RankingService', () => {
     expect(top[0].name).toBe('Ana Lima');
     expect(top[0].score).toBe(2000);
     expect(top).toHaveLength(2);
+  });
+
+  it('getTopTen() filtra pelo mês atual (gte criado_em no dia 1)', async () => {
+    const gte = vi.fn().mockReturnValue({
+      order: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    });
+    supabase.from.mockReturnValue({ select: vi.fn().mockReturnValue({ gte }) });
+
+    await svc.getTopTen();
+
+    expect(gte).toHaveBeenCalledWith('criado_em', expect.any(String));
+    const cutoff = new Date(gte.mock.calls[0][1]);
+    const now = new Date();
+    expect(cutoff.getMonth()).toBe(now.getMonth());
+    expect(cutoff.getFullYear()).toBe(now.getFullYear());
+    expect(cutoff.getDate()).toBe(1);
   });
 });

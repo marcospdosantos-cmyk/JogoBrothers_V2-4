@@ -1,6 +1,13 @@
 // src/services/RankingService.js
 import { supabase } from '../config/supabase.js';
 
+// First instant of the current month, in the player's local timezone, as an ISO
+// (UTC) string. Used to scope the ranking to "este mês" for the monthly prize.
+function startOfMonthISO() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+}
+
 export class RankingService {
   async saveScore(jogadorId, score, personagem) {
     const { data, error } = await supabase
@@ -16,6 +23,7 @@ export class RankingService {
     const { data, error } = await supabase
       .from('pontuacoes')
       .select('score, jogadores(nome, sobrenome)')
+      .gte('criado_em', startOfMonthISO())
       .order('score', { ascending: false })
       .limit(200);
     if (error) throw error;
@@ -36,6 +44,7 @@ export class RankingService {
       .from('pontuacoes')
       .select('score')
       .eq('jogador_id', jogadorId)
+      .gte('criado_em', startOfMonthISO())
       .order('score', { ascending: false })
       .limit(1)
       .single();
@@ -47,6 +56,7 @@ export class RankingService {
     const { data, error } = await supabase
       .from('pontuacoes')
       .select('score, jogador_id')
+      .gte('criado_em', startOfMonthISO())
       .order('score', { ascending: false });
     if (error) return null;
     const best = {};
