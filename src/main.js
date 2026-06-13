@@ -13,11 +13,14 @@ new Phaser.Game({
   type: Phaser.AUTO,
   width: GAME_W,
   height: GAME_H,
-  backgroundColor: '#000',
+  backgroundColor: '#1a1018',
+  pixelArt: true,             // crisp 16-bit scaling (no blur), implies roundPixels
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
+  // Multi-touch: a platformer needs joystick + button pressed at the same time.
+  input: { activePointers: 4 },
   physics: {
     default: 'arcade',
     arcade: { gravity: { y: 0 }, debug: false },

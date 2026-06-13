@@ -2,19 +2,35 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#1a1018" />
   <title>Brothers Burger — O Jogo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    canvas { display: block; }
-  </style>
-  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #1a1018;
+      overflow: hidden;
+      /* Block all native touch gestures: pinch-zoom, double-tap zoom, scroll, pull-to-refresh */
+      touch-action: none;
+      overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { display: flex; justify-content: center; align-items: center; }
+    canvas { display: block; touch-action: none; }
+
     #rotate-prompt {
       display: none;
       position: fixed;
       inset: 0;
-      background: #111;
+      background: #1a1018;
       color: #fff;
       font-family: monospace;
       font-size: 20px;
@@ -32,9 +48,21 @@
 </head>
 <body>
   <div id="rotate-prompt">
-    <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+    <div style="font-size: 48px; margin-bottom: 16px;">📱↔️</div>
     <div>Vire o celular na horizontal<br>para jogar!</div>
   </div>
+  <script>
+    // Belt-and-suspenders gesture blocking for iOS Safari, which ignores some
+    // touch-action rules. Prevents long-press menu, pinch-zoom and double-tap zoom.
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    let lastTouch = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouch <= 300) e.preventDefault(); // kill double-tap zoom
+      lastTouch = now;
+    }, { passive: false });
+  </script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

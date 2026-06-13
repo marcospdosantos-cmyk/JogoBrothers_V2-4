@@ -1,5 +1,6 @@
 // src/entities/enemies/BaseEnemy.js
 import Phaser from 'phaser';
+import { PHYSICS } from '../../config/game.js';
 
 export class BaseEnemy extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, key, frame = 0) {
@@ -8,6 +9,9 @@ export class BaseEnemy extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
     this.setCollideWorldBounds(true);
     this.setBounce(0);
+    // Global gravity is 0; grounded enemies need their own pull so they rest on
+    // the floor. Flying enemies (Mosca) disable this right after super().
+    this.setGravityY(PHYSICS.GRAVITY);
     this._dead = false;
   }
 

@@ -29,10 +29,12 @@ export class GameScene extends Phaser.Scene {
     this._hud         = new HUDSystem(this);
 
     // Tilemap
+    this._levelDone = false;
     const map = this.make.tilemap({ key: this._phaseConf.tilemap });
     const tiles = map.addTilesetImage(this._phaseConf.tileset, this._phaseConf.tileset);
     this._groundLayer = map.createLayer('Ground', tiles, 0, 0);
     this._groundLayer.setCollisionByProperty({ collides: true });
+    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
     // Player spawn from object layer
     const spawnObj = map.findObject('Objects', o => o.name === 'spawn');
@@ -91,16 +93,19 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setZoom(1);
 
     // Music
-    if (this.sound.get(this._phaseConf.music)) {
+    if (this.cache.audio.exists(this._phaseConf.music)) {
       this.sound.play(this._phaseConf.music, { loop: true, volume: 0.4 });
     }
 
-    // End-of-phase trigger
-    const goalObj = map.findObject('Objects', o => o.name === 'goal');
-    if (goalObj) {
-      const goalZone = this.add.zone(goalObj.x, goalObj.y, goalObj.width || 32, goalObj.height || 64);
-      this.physics.world.enable(goalZone);
-      this.physics.add.overlap(this._player, goalZone, this._onGoal, null, this);
+    // End-of-phase trigger. In boss phases the phase ends only when the boss is
+    // defeated (_onBossDefeated), so the walk-to-goal trigger is non-boss only.
+    if (!this._phaseConf.boss) {
+      const goalObj = map.findObject('Objects', o => o.name === 'goal');
+      if (goalObj) {
+        const goalZone = this.add.zone(goalObj.x, goalObj.y, goalObj.width || 32, goalObj.height || 64);
+        this.physics.world.enable(goalZone);
+        this.physics.add.overlap(this._player, goalZone, this._onGoal, null, this);
+      }
     }
 
     // If boss phase, start boss after short delay
@@ -210,6 +215,8 @@ export class GameScene extends Phaser.Scene {
       player.setVelocityY(-200);
       this._score.add(100);
       this._hud.updateScore(this._score.get());
+      // Stomping/spinning the boss to death must still end the phase.
+      if (enemy === this._boss && enemy.isDead()) this._onBossDefeated();
       return;
     }
 
@@ -251,6 +258,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   _onGoal() {
+    if (this._levelDone) return;
+    this._levelDone = true;
     this.sound.stopAll();
     const nextPhase = this._phaseNum + 1;
     if (PHASES[nextPhase]) {
@@ -262,7 +271,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   _onBossDefeated() {
-    this.sound.play('sfx_powerup');
+    if (this._bossDefeated) return;
+    this._bossDefeated = true;
+    if (this.cache.audio.exists('sfx_powerup')) this.sound.play('sfx_powerup');
     this.time.delayedCall(2000, () => this._onGoal());
   }
 
@@ -279,6 +290,7 @@ export class GameScene extends Phaser.Scene {
       [ctrl.left, ctrl.right] = [ctrl.right, ctrl.left];
     }
     this._player.update(ctrl);
+    this._controls.clearPressed();
     this._enemyGroup.getChildren().forEach(e => e.update(delta));
     if (this._boss && !this._boss.isDead()) this._boss.update(delta);
   }

@@ -21,16 +21,16 @@ export class BootScene extends Phaser.Scene {
     this.load.image('rua', 'assets/tilesets/rua.png');
     this.load.image('mercado', 'assets/tilesets/mercado.png');
     this.load.image('restaurante', 'assets/tilesets/restaurante.png');
-    this.load.audio('fase1', 'assets/audio/fase1.mp3');
-    this.load.audio('fase2', 'assets/audio/fase2.mp3');
-    this.load.audio('fase3', 'assets/audio/fase3.mp3');
-    this.load.audio('fase4', 'assets/audio/fase4.mp3');
-    this.load.audio('boss', 'assets/audio/boss.mp3');
-    this.load.audio('sfx_jump', 'assets/audio/sfx/jump.mp3');
-    this.load.audio('sfx_collect', 'assets/audio/sfx/collect.mp3');
-    this.load.audio('sfx_powerup', 'assets/audio/sfx/powerup.mp3');
-    this.load.audio('sfx_damage', 'assets/audio/sfx/damage.mp3');
-    this.load.audio('sfx_defeat', 'assets/audio/sfx/defeat.mp3');
+    this.load.audio('fase1', 'assets/audio/fase1.wav');
+    this.load.audio('fase2', 'assets/audio/fase2.wav');
+    this.load.audio('fase3', 'assets/audio/fase3.wav');
+    this.load.audio('fase4', 'assets/audio/fase4.wav');
+    this.load.audio('boss', 'assets/audio/boss.wav');
+    this.load.audio('sfx_jump', 'assets/audio/sfx/jump.wav');
+    this.load.audio('sfx_collect', 'assets/audio/sfx/collect.wav');
+    this.load.audio('sfx_powerup', 'assets/audio/sfx/powerup.wav');
+    this.load.audio('sfx_damage', 'assets/audio/sfx/damage.wav');
+    this.load.audio('sfx_defeat', 'assets/audio/sfx/defeat.wav');
   }
 
   create() {
