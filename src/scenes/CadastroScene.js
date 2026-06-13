@@ -1,7 +1,13 @@
 // src/scenes/CadastroScene.js
 import Phaser from 'phaser';
 import { PlayerService } from '../services/PlayerService.js';
+import { supabaseConfigured } from '../config/supabase.js';
 import { GAME_W, GAME_H } from '../config/game.js';
+
+function localId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'local-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+}
 
 export class CadastroScene extends Phaser.Scene {
   constructor() { super('CadastroScene'); }
@@ -32,15 +38,22 @@ export class CadastroScene extends Phaser.Scene {
       if (telefone.length < 10) { errText.setText('Telefone inválido.'); return; }
 
       btn.setText('Aguarde...').setInteractive(false);
+
+      // Try Supabase when configured; otherwise (or on failure) fall back to a
+      // local id so the player can always start playing. Scores only sync to the
+      // cloud once real Supabase credentials are set.
+      let playerId;
       try {
+        if (!supabaseConfigured) throw new Error('offline');
         const player = await svc.create(nome, sobrenome, telefone);
-        localStorage.setItem('bb_player_id', player.id);
-        localStorage.setItem('bb_player_name', `${player.nome} ${player.sobrenome}`);
-        this.scene.start('MenuScene', { playerId: player.id });
+        playerId = player.id;
       } catch (e) {
-        errText.setText('Erro ao cadastrar. Tente novamente.');
-        btn.setText('[ JOGAR ]').setInteractive(true);
+        playerId = localId();
       }
+
+      localStorage.setItem('bb_player_id', playerId);
+      localStorage.setItem('bb_player_name', `${nome} ${sobrenome}`);
+      this.scene.start('MenuScene', { playerId });
     });
   }
 }
