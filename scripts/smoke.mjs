@@ -70,6 +70,33 @@ async function activeScenes(page) {
   await page.close();
 }
 
+// ---- Test 3: navegação por toques reais (Menu → Personagem → Jogo) ----
+{
+  const page = await browser.newPage({ viewport: { width: 1024, height: 576 } });
+  attach(page, 'nav');
+  await page.route('**supabase.co**', (r) => r.abort());
+  await page.addInitScript(() => {
+    localStorage.setItem('bb_player_id', 'smoke-test-id');
+    localStorage.setItem('bb_player_name', 'Tester');
+  });
+  await page.goto(URL, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.waitForTimeout(2500);
+
+  // canvas 800x450 ocupa a viewport 1024x576 (16:9) → escala 1.28x, topo em (0,0)
+  const S = 1024 / 800;
+  const tap = (gx, gy) => page.mouse.click(gx * S, gy * S);
+
+  await tap(400, 280); // botão JOGAR (MenuScene)
+  await page.waitForTimeout(1200);
+  console.log('Após tocar JOGAR:', await activeScenes(page));
+
+  await tap(250, 220); // personagem 1 (SelectCharScene)
+  await page.waitForTimeout(2500);
+  console.log('Após escolher personagem:', await activeScenes(page));
+
+  await page.close();
+}
+
 await browser.close();
 
 console.log('\n=== ERROS CAPTURADOS ===');
