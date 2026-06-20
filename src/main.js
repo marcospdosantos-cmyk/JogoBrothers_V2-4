@@ -10,8 +10,12 @@ import { GameScene } from './scenes/GameScene.js';
 import { GameOverScene } from './scenes/GameOverScene.js';
 import { RankingScene } from './scenes/RankingScene.js';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
+  // A parent element is REQUIRED for the DOM container to be created
+  // (Phaser's CreateDOMContainer bails when config.parent is missing). The
+  // CadastroScene form relies on it — without a parent the first visit crashes.
+  parent: 'game',
   width: GAME_W,
   height: GAME_H,
   backgroundColor: '#1a1018',
@@ -29,3 +33,6 @@ new Phaser.Game({
   dom: { createContainer: true },
   scene: [BootScene, CadastroScene, MenuScene, SelectCharScene, GameScene, GameOverScene, RankingScene],
 });
+
+// Exposed for debugging / automated smoke tests.
+if (typeof window !== 'undefined') window.game = game;

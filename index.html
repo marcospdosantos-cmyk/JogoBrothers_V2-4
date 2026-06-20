@@ -24,6 +24,9 @@
       -webkit-tap-highlight-color: transparent;
     }
     body { display: flex; justify-content: center; align-items: center; }
+    /* Phaser parent: fills the viewport so Scale.FIT letterboxes correctly,
+       and gives the DOM container an element to attach to. */
+    #game { position: fixed; inset: 0; }
     canvas { display: block; touch-action: none; }
 
     #rotate-prompt {
@@ -47,6 +50,7 @@
   </style>
 </head>
 <body>
+  <div id="game"></div>
   <div id="rotate-prompt">
     <div style="font-size: 48px; margin-bottom: 16px;">📱↔️</div>
     <div>Vire o celular na horizontal<br>para jogar!</div>

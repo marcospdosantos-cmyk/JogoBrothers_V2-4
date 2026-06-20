@@ -6,3 +6,7 @@ dist/
 
 # Copyrighted ROM — do not commit
 *.smc
+
+# test artifacts
+scripts/smoke*.png
+preview.log
